@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SignalChain · DSP 信号链工作台</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">∿</span>
+      <div>
+        <h1>SignalChain</h1>
+        <p>嵌入式 / 光电系统的数字信号链工作台 · 零依赖</p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <span class="server" id="serverStatus">本地服务</span>
+      <button class="ghost-btn" id="themeBtn">🌓</button>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button data-tab="demo" class="active">演示</button>
+    <button data-tab="signal">信号生成</button>
+    <button data-tab="filter">滤波设计</button>
+    <button data-tab="about">关于</button>
+  </nav>
+
+  <main>
+    <!-- ============ 演示 ============ -->
+    <section id="view-demo" class="view active">
+      <div class="row-2">
+        <div class="card">
+          <div class="card-head"><h3>内置演示</h3><span class="hint">点击载入场景</span></div>
+          <div id="demoList" class="demo-list"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>结论</h3><span class="hint" id="demoName"></span></div>
+          <div id="demoVerdict" class="verdict"><div class="empty">载入一个演示查看结果</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>时域信号</h3><span class="hint">前 2048 个样本</span></div>
+        <div class="canvas-wrap"><canvas id="timeCanvas"></canvas></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>频谱（功率谱密度）</h3><span class="hint">dB · 手写 FFT</span></div>
+        <div class="canvas-wrap"><canvas id="specCanvas"></canvas></div>
+      </div>
+
+      <div class="card" id="filterRespCard" style="display:none">
+        <div class="card-head"><h3>滤波器频率响应</h3><span class="hint">幅频 dB</span></div>
+        <div class="canvas-wrap"><canvas id="respCanvas"></canvas></div>
+      </div>
+    </section>
+
+    <!-- ============ 信号生成 ============ -->
+    <section id="view-signal" class="view">
+      <div class="card">
+        <div class="card-head"><h3>信号参数</h3></div>
+        <div class="form-grid">
+          <label>波形
+            <select id="sigKind">
+              <option value="sine">正弦</option>
+              <option value="square">方波</option>
+              <option value="saw">锯齿</option>
+              <option value="triangle">三角</option>
+              <option value="chirp">扫频 chirp</option>
+              <option value="noise">白噪声</option>
+              <option value="pink">粉红噪声</option>
+            </select>
+          </label>
+          <label>频率 (Hz)<input id="sigFreq" type="number" value="1000" step="1"></label>
+          <label>采样率 (Hz)<input id="sigFs" type="number" value="100000" step="1000"></label>
+          <label>样本数<input id="sigN" type="number" value="4096" step="128"></label>
+          <label>幅度<input id="sigAmp" type="number" value="1.0" step="0.1"></label>
+          <label>ADC 位宽
+            <select id="sigBits">
+              <option value="">无量化</option>
+              <option value="6">6 bit</option>
+              <option value="8">8 bit</option>
+              <option value="10">10 bit</option>
+              <option value="12" selected>12 bit</option>
+              <option value="14">14 bit</option>
+              <option value="16">16 bit</option>
+            </select>
+          </label>
+        </div>
+        <div class="actions">
+          <button class="primary" id="sigGenBtn">生成并分析</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>频谱指标</h3><span class="hint">SINAD / ENOB / THD / SFDR</span></div>
+        <div id="sigMetrics" class="metrics-grid"><div class="empty">生成信号后显示</div></div>
+      </div>
+
+      <div class="card"><div class="card-head"><h3>时域</h3></div>
+        <div class="canvas-wrap"><canvas id="sigTimeCanvas"></canvas></div></div>
+      <div class="card"><div class="card-head"><h3>频谱</h3></div>
+        <div class="canvas-wrap"><canvas id="sigSpecCanvas"></canvas></div></div>
+    </section>
+
+    <!-- ============ 滤波设计 ============ -->
+    <section id="view-filter" class="view">
+      <div class="card">
+        <div class="card-head"><h3>滤波器参数</h3></div>
+        <div class="form-grid">
+          <label>类型
+            <select id="fltKind">
+              <option value="lowpass">IIR 低通</option>
+              <option value="highpass">IIR 高通</option>
+              <option value="bandpass">IIR 带通</option>
+              <option value="fir">FIR 低通</option>
+            </select>
+          </label>
+          <label>截止 (Hz)<input id="fltCutoff" type="number" value="1000" step="10"></label>
+          <label>通带下限 (Hz)<input id="fltFl" type="number" value="100" step="10"></label>
+          <label>通带上限 (Hz)<input id="fltFh" type="number" value="2000" step="10"></label>
+          <label>采样率 (Hz)<input id="fltFs" type="number" value="100000" step="1000"></label>
+          <label>阶数<input id="fltOrder" type="number" value="4" step="1"></label>
+        </div>
+        <div class="actions">
+          <button class="primary" id="fltDesignBtn">设计滤波器</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>频率响应</h3><span class="hint" id="fltInfo"></span></div>
+        <div class="canvas-wrap"><canvas id="fltRespCanvas"></canvas></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>滤波演示</h3><span class="hint">500Hz 信号 + 4kHz 干扰，滤波前后对比</span></div>
+        <div class="canvas-wrap"><canvas id="fltDemoCanvas"></canvas></div>
+      </div>
+    </section>
+
+    <!-- ============ 关于 ============ -->
+    <section id="view-about" class="view">
+      <div class="card">
+        <div class="card-head"><h3>关于 SignalChain</h3></div>
+        <div class="about-body">
+          <p><strong>SignalChain</strong> 是一个本地运行的 DSP（数字信号处理）信号链工作台，面向嵌入式与光电系统开发中的常见需求：ADC 采样、抗混叠滤波、数字滤波、频谱分析，以及 SINAD / ENOB / THD / SFDR / IMD 等指标的测量。</p>
+          <p>全部核心算法（基-2 FFT、窗函数、FIR/IIR 滤波器设计、双线性变换、量化噪声建模）均为<strong>纯 Python 标准库实现，零第三方依赖</strong>，可直接阅读与教学。</p>
+          <h4>能力一览</h4>
+          <ul>
+            <li><strong>手写 FFT</strong>：基-2 迭代 Cooley–Tukey，含位反转、窗函数（Hann/Hamming/Blackman/Blackman-Harris/Kaiser/Flattop）</li>
+            <li><strong>滤波器设计</strong>：FIR（窗函数法）与 IIR（Butterworth 双线性变换），支持低通/高通/带通/带阻</li>
+            <li><strong>ADC 建模</strong>：位宽、参考电压、偏置、增益误差、抖动、dither</li>
+            <li><strong>频谱指标</strong>：SINAD、SNR、ENOB、THD、SFDR、IMD3</li>
+            <li><strong>采样理论</strong>：混叠演示、抗混叠抽取、过采样插值</li>
+          </ul>
+          <h4>典型工作流</h4>
+          <ol>
+            <li>生成一个信号（正弦 / 扫频 / 噪声）</li>
+            <li>经过 ADC 量化（选择位宽）</li>
+            <li>设计滤波器去除噪声 / 干扰</li>
+            <li>测量滤波前后的 SINAD、ENOB、THD</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

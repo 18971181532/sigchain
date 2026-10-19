@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sigchain"
+version = "1.0.0"
+description = "DSP signal-chain workbench: hand-written FFT, FIR/IIR filter design, ADC modelling and spectral measurements (SINAD/ENOB/THD/SFDR) with zero dependencies"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "SignalChain contributors" }]
+keywords = [
+    "dsp", "fft", "filter-design", "fir", "iir", "butterworth",
+    "adc", "enob", "sinad", "thd", "sfdr", "aliasing",
+    "embedded", "optoelectronics", "signal-processing", "python",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",
+    "Topic :: Multimedia :: Sound/Audio :: Analysis",
+]
+dependencies = []
+
+[project.scripts]
+sigchain = "sigchain.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/18971181532/sigchain"
+Repository = "https://github.com/18971181532/sigchain"
+Issues = "https://github.com/18971181532/sigchain/issues"
+
+[tool.setuptools]
+packages = ["sigchain"]
+
+[tool.setuptools.package-data]
+sigchain = ["web/*.html", "web/*.css", "web/*.js"]

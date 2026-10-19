@@ -1,0 +1,38 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Unit tests
+        run: python -m unittest discover -s tests -t . -v
+
+      - name: CLI smoke test
+        run: python run.py run adc
+
+      - name: CLI json output
+        run: python run.py filter --kind bandpass --fl 100 --fh 2000 --json > /tmp/f.json && python -c "import json;print(json.load(open('/tmp/f.json'))['kind'])"
+
+      - name: Server API smoke test
+        run: python -m unittest tests.test_filters_api -v
+
+      - name: Package metadata check
+        run: python -m pip install --upgrade build && python -m build
